@@ -1,5 +1,7 @@
 #include "register_types.h"
 #include "table_view.h"
+#include "view_accessor.h"
+#include "column_accessor.h"
 #include "expression_view.h"
 #include "mutable_table_view.h"
 #include "basic_table.h"
@@ -15,6 +17,8 @@ void initialize_summator_types(godot::ModuleInitializationLevel p_level)
 	}
 
 	godot::ClassDB::register_class<morphy::TableView>();
+	godot::ClassDB::register_abstract_class<morphy::ViewAccessor>();
+	godot::ClassDB::register_abstract_class<morphy::ColumnAccessor>();
 	godot::ClassDB::register_class<morphy::MutableTableView>();
 
 	godot::ClassDB::register_class<morphy::BasicTable>();

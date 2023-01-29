@@ -17,11 +17,13 @@ public:
     TableView();
     virtual ~TableView();
 
-    virtual int64_t num_columns() const;
+    virtual uint64_t num_columns() const;
 
-    virtual int64_t num_rows() const;
+    virtual uint64_t num_rows() const;
 
-    virtual const godot::Variant& get_cell(int64_t column, int64_t row) const;
+    virtual uint64_t get_column_index(const godot::String& p_column_name) const;
+
+    virtual const godot::Variant& get_cell(uint64_t column, uint64_t row) const;
 };
 
 } // namespace morphy

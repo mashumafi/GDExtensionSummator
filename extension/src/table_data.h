@@ -8,16 +8,16 @@
 namespace morphy
 {
 
-template <typename H, int64_t Z>
+template <typename H, uint64_t Z>
 class TableData
 {
 public:
-    int64_t num_columns() const
+    uint64_t num_columns() const
     {
         return headers.size();
     }
 
-    int64_t num_rows() const
+    uint64_t num_rows() const
     {
         return row_count;
     }
@@ -46,20 +46,20 @@ public:
             headers.push_back(header);
     }
 
-    void add_rows(int64_t num)
+    void add_rows(uint64_t num)
     {
         row_count += num;
         if (buffers.size() * Z < row_count)
         {
-            int64_t oldSize = buffers.size();
+            uint64_t oldSize = buffers.size();
             buffers.resize((row_count * 2 + Z) / Z);
 
-            for (int64_t i = oldSize; i < buffers.size(); ++i)
+            for (uint64_t i = oldSize; i < buffers.size(); ++i)
                 buffers[i].add_columns(headers.size());
         }
     }
 
-    void set_cell(int64_t column, int64_t row, const godot::Variant& value)
+    void set_cell(uint64_t column, uint64_t row, const godot::Variant& value)
     {
         ERR_FAIL_COND(headers.size() <= column);
         ERR_FAIL_COND(buffers.size() * Z <= row);
@@ -67,7 +67,23 @@ public:
         buffers[row / Z].set_cell(column, row % Z, value);
     }
 
-    const godot::Variant& get_cell(int64_t column, int64_t row) const
+    const H& get_header(uint64_t column) const
+    {
+        static H nil;
+        ERR_FAIL_COND_V(headers.size() <= column, nil);
+
+        return headers[column];
+    }
+
+    H& get_header(uint64_t column)
+    {
+        static H nil;
+        ERR_FAIL_COND_V(headers.size() <= column, nil);
+
+        return headers[column];
+    }
+
+    const godot::Variant& get_cell(uint64_t column, uint64_t row) const
     {
         static const godot::Variant nil;
         ERR_FAIL_COND_V(headers.size() <= column, nil);
@@ -79,7 +95,7 @@ public:
 private:
     std::vector<H> headers;
     std::vector<Rows<Z>> buffers;
-    int64_t row_count = 0;
+    uint64_t row_count = 0;
 };
 
 } // namespace morphy

@@ -23,17 +23,19 @@ public:
     BasicTable();
     virtual ~BasicTable();
 
-    virtual int64_t num_columns() const override;
+    virtual uint64_t num_columns() const override;
 
-    virtual int64_t num_rows() const override;
+    virtual uint64_t num_rows() const override;
 
-    virtual const godot::Variant& get_cell(int64_t p_column, int64_t p_row) const override;
+    virtual uint64_t get_column_index(const godot::String& p_column_name) const override;
 
-    virtual void set_cell(int64_t p_column, int64_t p_row, const godot::Variant& p_value) override;
+    virtual const godot::Variant& get_cell(uint64_t p_column, uint64_t p_row) const override;
+
+    virtual void set_cell(uint64_t p_column, uint64_t p_row, const godot::Variant& p_value) override;
 
     void add_columns(const godot::PackedStringArray& p_names);
 
-    void add_rows(int64_t p_num);
+    void add_rows(uint64_t p_num);
 };
 
 } // namespace morphy

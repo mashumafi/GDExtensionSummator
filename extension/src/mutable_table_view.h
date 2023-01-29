@@ -19,7 +19,7 @@ public:
     MutableTableView();
     virtual ~MutableTableView();
 
-    virtual void set_cell(int64_t p_column, int64_t p_row, const godot::Variant& p_value);
+    virtual void set_cell(uint64_t p_column, uint64_t p_row, const godot::Variant& p_value);
 };
 
 } // namespace morphy

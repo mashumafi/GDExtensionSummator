@@ -46,11 +46,13 @@ public:
     ExpressionView();
     virtual ~ExpressionView();
 
+    virtual uint64_t get_column_index(const godot::String& p_column_name) const override;
+
     godot::Error add_expressions(const godot::TypedArray<ExpressionColumn>& p_columns);
 
-    void set_view(const godot::Ref<TableView>& p_view);
+    void set_view(const godot::TypedArray<TableView>& p_view);
 
-    virtual const godot::Variant& get_cell(int64_t p_column, int64_t p_row) const override;
+    virtual const godot::Variant& get_cell(uint64_t p_column, uint64_t p_row) const override;
 
 protected:
     static void _bind_methods();

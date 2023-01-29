@@ -1,4 +1,5 @@
 #include "table_view.h"
+#include "util.h"
 
 #include <godot_cpp/core/class_db.hpp>
 
@@ -15,17 +16,22 @@ TableView::~TableView()
 {
 }
 
-int64_t TableView::num_columns() const
+uint64_t TableView::num_columns() const
 {
     return 0;
 }
 
-int64_t TableView::num_rows() const
+uint64_t TableView::num_rows() const
 {
     return 0;
 }
 
-const godot::Variant& TableView::get_cell(int64_t column, int64_t row) const
+uint64_t TableView::get_column_index(const godot::String& p_column_name) const
+{
+    return INVALID_INDEX;
+}
+
+const godot::Variant& TableView::get_cell(uint64_t column, uint64_t row) const
 {
     static const godot::Variant nil;
 
@@ -36,6 +42,7 @@ void TableView::_bind_methods()
 {
     godot::ClassDB::bind_method(godot::D_METHOD("num_columns"), &TableView::num_columns);
     godot::ClassDB::bind_method(godot::D_METHOD("num_rows"), &TableView::num_rows);
+    godot::ClassDB::bind_method(godot::D_METHOD("get_column_index"), &TableView::get_column_index);
     godot::ClassDB::bind_method(godot::D_METHOD("get_cell", "column", "row"), &TableView::get_cell);
 }
 

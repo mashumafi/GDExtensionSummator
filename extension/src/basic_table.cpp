@@ -1,4 +1,5 @@
 #include "basic_table.h"
+#include "util.h"
 
 #include <godot_cpp/core/class_db.hpp>
 
@@ -19,14 +20,25 @@ void BasicTable::_bind_methods()
     godot::ClassDB::bind_method(godot::D_METHOD("add_rows", "num"), &BasicTable::add_rows);
 }
 
-int64_t BasicTable::num_columns() const
+uint64_t BasicTable::num_columns() const
 {
     return data.num_columns();
 }
 
-int64_t BasicTable::num_rows() const
+uint64_t BasicTable::num_rows() const
 {
     return data.num_rows();
+}
+
+uint64_t BasicTable::get_column_index(const godot::String& p_column_name) const
+{
+    for (uint64_t column = 0; column < data.num_columns(); ++column)
+    {
+        if (data.get_header(column) == p_column_name)
+            return column;
+    }
+
+    return INVALID_INDEX;
 }
 
 void BasicTable::add_columns(const godot::PackedStringArray& p_names)
@@ -41,17 +53,17 @@ void BasicTable::add_columns(const godot::PackedStringArray& p_names)
     data.add_columns(std::move(names));
 }
 
-void BasicTable::add_rows(int64_t p_num)
+void BasicTable::add_rows(uint64_t p_num)
 {
     data.add_rows(p_num);
 }
 
-const godot::Variant& BasicTable::get_cell(int64_t p_column, int64_t p_row) const
+const godot::Variant& BasicTable::get_cell(uint64_t p_column, uint64_t p_row) const
 {
     return data.get_cell(p_column, p_row);
 }
 
-void BasicTable::set_cell(int64_t p_column, int64_t p_row, const godot::Variant& p_value)
+void BasicTable::set_cell(uint64_t p_column, uint64_t p_row, const godot::Variant& p_value)
 {
     data.set_cell(p_column, p_row, p_value);
 }

@@ -1,4 +1,7 @@
 #include "expression_view.h"
+#include "view_accessor.h"
+
+#include "util.h"
 
 #include <godot_cpp/core/class_db.hpp>
 
@@ -31,15 +34,17 @@ godot::Error ExpressionColumn::set_expression(const godot::String& p_expression)
     godot::Ref<godot::Expression> expression;
     expression.instantiate();
 
-    godot::PackedStringArray inputNames;
-    // TODO: Add custom expressions
+    godot::PackedStringArray input_names;
+    // TODO: Add custom inputs
 
-    godot::Error error = expression->parse(p_expression, inputNames);
+    godot::Error error = expression->parse(p_expression, input_names);
     if (error != godot::OK)
     {
         godot::UtilityFunctions::push_error(expression->get_error_text());
         return error;
     }
+
+    this->expression = expression;
 
     return godot::OK;
 }
@@ -69,6 +74,19 @@ void ExpressionView::_bind_methods()
     godot::ClassDB::bind_method(godot::D_METHOD("set_view", "view"), &ExpressionView::set_view);
 }
 
+uint64_t ExpressionView::get_column_index(const godot::String& p_column_name) const
+{
+    for (uint64_t column = 0; column < data.num_columns(); ++column)
+    {
+        if (data.get_header(column).name == p_column_name)
+            return column + (view.is_null() ? 0 : view->num_columns());
+    }
+
+    ERR_FAIL_COND_V(view.is_null(), INVALID_INDEX);
+
+    return view->get_column_index(p_column_name);
+}
+
 godot::Error ExpressionView::add_expressions(const godot::TypedArray<ExpressionColumn>& p_columns)
 {
     std::vector<ExpressionHeader> headers;
@@ -77,23 +95,45 @@ godot::Error ExpressionView::add_expressions(const godot::TypedArray<ExpressionC
     {
         const godot::Ref<ExpressionColumn>& expression_column = p_columns[i];
         ERR_FAIL_COND_V_MSG(expression_column->get_name().is_empty(), godot::FAILED, "Invalid column name");
-        ERR_FAIL_COND_V_MSG(expression_column->get_expression().is_valid(), godot::FAILED, "Invalid expression");
+        ERR_FAIL_COND_V_MSG(expression_column->get_expression().is_null(), godot::FAILED, "Invalid expression");
 
         headers.push_back({expression_column->get_name(), expression_column->get_expression()});
     }
 
     data.add_columns(std::move(headers));
+
+    if (view.is_null())
+        return godot::OK;
+
+    data.add_rows(view->num_rows());
+
+    auto base_instance = make_unique<ViewAccessor>();
+    base_instance->set_view(this);
+    for (uint64_t row = 0; row < data.num_rows(); ++row)
+    {
+        base_instance->set_current_row(row);
+
+        for (uint64_t column = 0; column < data.num_columns(); ++column)
+        {
+            ExpressionHeader& header = data.get_header(column);
+            godot::Array inputs;
+            data.set_cell(column, row, header.execute(inputs, base_instance.get()));
+        }
+    }
+
     return godot::OK;
 }
 
-void ExpressionView::set_view(const godot::Ref<TableView>& p_view)
+void ExpressionView::set_view(const godot::TypedArray<TableView>& p_view)
 {
-    view = p_view;
+    view = p_view[0];
+
+    ERR_FAIL_COND_MSG(view.is_null(), "Invalid view");
 
     // TODO: Calculate expressions
 }
 
-const godot::Variant& ExpressionView::get_cell(int64_t p_column, int64_t p_row) const
+const godot::Variant& ExpressionView::get_cell(uint64_t p_column, uint64_t p_row) const
 {
     static const godot::Variant nil;
 

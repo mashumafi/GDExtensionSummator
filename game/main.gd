@@ -1,12 +1,11 @@
 extends Node
 
 const column_increment := 5
-const row_increment := 25
+const row_increment := 5
 
 
 func _ready() -> void:
 	test_add()
-	return
 
 	var start := Time.get_ticks_usec()
 	var table := BasicTable.new()
@@ -41,21 +40,19 @@ func test_add():
 	var table := BasicTable.new()
 	table.add_columns(PackedStringArray(["a", "b"]))
 	table.add_rows(1)
-	print(table.num_columns())
-	print(table.num_rows())
 
 	table.set_cell(0, 0, 1)
 	table.set_cell(1, 0, 2)
 
 	var add := ExpressionColumn.new()
 	add.set_name("add")
-	add.set_expression("a[row()] + b[row()]")
+	add.set_expression("column('a').cell(row()) + column('b').cell(row())")
 
 	var view := ExpressionView.new()
-	#view.set_view(table)
+	view.set_view([table])
 	view.add_expressions([add])
 
-	return
 	assert(view.get_cell(0, 0) == 1)
 	assert(view.get_cell(1, 0) == 2)
-	assert(view.get_cell(2, 0) == 3)
+	var sum = view.get_cell(2, 0);
+	assert(sum == 3)
