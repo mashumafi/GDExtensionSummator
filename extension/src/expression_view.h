@@ -3,13 +3,61 @@
 
 #include "table_view.h"
 #include "table_data.h"
+#include "util.h"
 
 #include <godot_cpp/classes/expression.hpp>
 #include <godot_cpp/classes/ref.hpp>
-#include <godot_cpp/classes/a_star2d.hpp>
 
 namespace morphy
 {
+
+struct ExpressionDependency
+{
+    godot::String table;
+    uint64_t column;
+    uint64_t row;
+
+    bool operator<(const ExpressionDependency& other) const
+    {
+        if (table < other.table)
+            return true;
+        else if (table > other.table)
+            return false;
+        
+        if (column < other.column)
+            return true;
+        else if (column > other.column)
+            return false;
+        
+        if (row < other.row)
+            return true;
+        else if (row > other.row)
+            return false;
+        
+        return false; // They are equal
+    }
+};
+
+struct ExpressionCell
+{
+    uint64_t column;
+    uint64_t row;
+
+    bool operator<(const ExpressionCell& other) const
+    {
+        if (column < other.column)
+            return true;
+        else if (column > other.column)
+            return false;
+        
+        if (row < other.row)
+            return true;
+        else if (row > other.row)
+            return false;
+        
+        return false; // They are equal
+    }
+};
 
 struct ExpressionHeader
 {
@@ -17,6 +65,13 @@ struct ExpressionHeader
     godot::Ref<godot::Expression> expression;
 
     godot::Variant execute(const godot::Array& inputs = godot::Array(), godot::Object* base_instance = nullptr);
+};
+
+struct ExpressionMeta
+{
+    bool computed = false;
+    // Keep a list so that if the formula is recomputed we can clear previous dependencies
+    GodotSet<ExpressionDependency> depends_on;
 };
 
 class ExpressionColumn : public godot::RefCounted
@@ -46,20 +101,26 @@ public:
     ExpressionView();
     virtual ~ExpressionView();
 
+    virtual uint64_t num_columns() const override;
+
+    virtual uint64_t num_rows() const override;
+
     virtual uint64_t get_column_index(const godot::String& p_column_name) const override;
+
+    virtual const godot::Variant& get_cell(uint64_t p_column, uint64_t p_row) const override;
 
     godot::Error add_expressions(const godot::TypedArray<ExpressionColumn>& p_columns);
 
     void set_view(const godot::TypedArray<TableView>& p_view);
 
-    virtual const godot::Variant& get_cell(uint64_t p_column, uint64_t p_row) const override;
-
 protected:
     static void _bind_methods();
 
 private:
-    godot::Ref<TableView>          view;
-    TableData<ExpressionHeader, 4> data;
+    godot::Ref<TableView>                                            view;
+    TableData<ExpressionHeader, ExpressionMeta>                      data;
+    // Helps figure out which expressions update when a dependency changes
+    GodotMap<ExpressionDependency, GodotSet<ExpressionCell>> dependencies;
 };
 
 } // namespace morphy

@@ -19,7 +19,7 @@ class ViewAccessor : public godot::Object
     GDCLASS(ViewAccessor, godot::Object);
 
 public:
-    void set_view(TableView* p_view);
+    void set_view(ITableView* p_view);
     void set_current_row(uint64_t p_current_row);
 
     uint64_t row() const;
@@ -30,7 +30,7 @@ protected:
     ColumnAccessor* get_column(const godot::String& column_name);
 
 private:
-    TableView* view;
+    ITableView* view;
     uint64_t current_row = 0;
     std::unordered_map<std::u32string, UniqueObject<ColumnAccessor>> column_cache;
 };

@@ -1,17 +1,31 @@
 #ifndef MORPHY_TABLE_DATA_CLASS_H
 #define MORPHY_TABLE_DATA_CLASS_H
 
-#include "rows.h"
+#include "util.h"
 
 #include <godot_cpp/templates/vector.hpp>
 
 namespace morphy
 {
 
-template <typename H, uint64_t Z>
+struct EmptyMeta
+{
+};
+
+template<typename M>
+struct Cell
+{
+    M meta;
+    godot::Variant value;
+};
+
+template <typename H, typename M = EmptyMeta>
 class TableData
 {
 public:
+    using Cell = Cell<M>;
+    using Row = GodotVector<Cell>;
+
     uint64_t num_columns() const
     {
         return headers.size();
@@ -19,52 +33,44 @@ public:
 
     uint64_t num_rows() const
     {
-        return row_count;
+        return rows.size();
     }
 
-    void add_columns(std::vector<H>&& p_headers)
+    void add_columns(GodotVector<H>&& p_headers)
     {
-        for (Rows<Z>& rows : buffers)
-        {
-            rows.add_columns(p_headers.size());
-        }
-
         headers.reserve(headers.size() + p_headers.size());
         for (const H& header : p_headers)
-        {
             headers.push_back(std::move(header));
-        }
+
+        for (Row& row : rows)
+            row.resize(headers.size());
     }
 
-    void add_columns(const std::vector<H>& p_headers)
+    void add_columns(const GodotVector<H>& p_headers)
     {
-        for (Rows<Z>& rows : buffers)
-            rows.add_columns(p_headers.size());
-
         headers.reserve(headers.size() + p_headers.size());
         for (const H& header : p_headers)
             headers.push_back(header);
+
+        for (Row& row : rows)
+            row.resize(headers.size());
     }
 
     void add_rows(uint64_t num)
     {
-        row_count += num;
-        if (buffers.size() * Z < row_count)
-        {
-            uint64_t oldSize = buffers.size();
-            buffers.resize((row_count * 2 + Z) / Z);
+        uint64_t initial_size = rows.size();
+        rows.resize(rows.size() + num);
 
-            for (uint64_t i = oldSize; i < buffers.size(); ++i)
-                buffers[i].add_columns(headers.size());
-        }
+        for (uint64_t row = initial_size; row < rows.size(); ++row)
+            rows[row].resize(headers.size());
     }
 
     void set_cell(uint64_t column, uint64_t row, const godot::Variant& value)
     {
-        ERR_FAIL_COND(headers.size() <= column);
-        ERR_FAIL_COND(buffers.size() * Z <= row);
+        ERR_FAIL_COND(rows.size() <= row);
+        ERR_FAIL_COND(rows[row].size() <= column);
 
-        buffers[row / Z].set_cell(column, row % Z, value);
+        rows[row][column].value = value;
     }
 
     const H& get_header(uint64_t column) const
@@ -86,16 +92,15 @@ public:
     const godot::Variant& get_cell(uint64_t column, uint64_t row) const
     {
         static const godot::Variant nil;
-        ERR_FAIL_COND_V(headers.size() <= column, nil);
-        ERR_FAIL_COND_V(buffers.size() * Z <= row, nil);
+        ERR_FAIL_COND_V(rows.size() <= row, nil);
+        ERR_FAIL_COND_V(rows[row].size() <= column, nil);
 
-        return buffers[row / Z].get_cell(column, row % Z);
+        return rows[row][column].value;
     }
 
 private:
-    std::vector<H> headers;
-    std::vector<Rows<Z>> buffers;
-    uint64_t row_count = 0;
+    GodotVector<H> headers;
+    GodotVector<Row> rows;
 };
 
 } // namespace morphy

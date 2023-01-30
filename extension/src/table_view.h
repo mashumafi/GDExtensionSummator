@@ -6,7 +6,18 @@
 namespace morphy
 {
 
-class TableView : public godot::RefCounted
+struct ITableView
+{
+    virtual uint64_t num_columns() const = 0;
+
+    virtual uint64_t num_rows() const = 0;
+
+    virtual uint64_t get_column_index(const godot::String& p_column_name) const = 0;
+
+    virtual const godot::Variant& get_cell(uint64_t column, uint64_t row) const = 0;
+};
+
+class TableView : public godot::RefCounted, public ITableView
 {
     GDCLASS(TableView, godot::RefCounted);
 
@@ -17,13 +28,13 @@ public:
     TableView();
     virtual ~TableView();
 
-    virtual uint64_t num_columns() const;
+    virtual uint64_t num_columns() const override;
 
-    virtual uint64_t num_rows() const;
+    virtual uint64_t num_rows() const override;
 
-    virtual uint64_t get_column_index(const godot::String& p_column_name) const;
+    virtual uint64_t get_column_index(const godot::String& p_column_name) const override;
 
-    virtual const godot::Variant& get_cell(uint64_t column, uint64_t row) const;
+    virtual const godot::Variant& get_cell(uint64_t column, uint64_t row) const override;
 };
 
 } // namespace morphy

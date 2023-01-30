@@ -4,9 +4,56 @@
 #include "util.h"
 
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 
 namespace morphy
 {
+
+namespace
+{
+
+class DependencyTracker
+{
+public:
+    // Adds a dependency and returns true if it succeeds, otherwise there could be a cycle
+    bool add_dependency(const godot::String& table, uint64_t column, uint64_t row)
+    {
+        return depends_on.insert({table, column, row}).second;
+    }
+
+private:
+    GodotSet<ExpressionDependency> depends_on;
+};
+
+// Executes expressions recursively
+// Tracks dependencies and detects cycles
+struct RecursiveExpressionExecutor : public ITableView
+{
+    virtual uint64_t num_columns() const 
+    {
+        return view->num_columns();
+    }
+
+    virtual uint64_t num_rows() const
+    {
+        return view->num_rows();
+    }
+
+    virtual uint64_t get_column_index(const godot::String& p_column_name) const
+    {
+        return view->get_column_index(p_column_name);
+    }
+
+    virtual const godot::Variant& get_cell(uint64_t column, uint64_t row) const
+    {
+        return view->get_cell(column, row);
+    }
+
+    ITableView*       view;
+    DependencyTracker dependency_tracker;
+};
+
+} // namespace
 
 godot::Variant ExpressionHeader::execute(const godot::Array& p_inputs, godot::Object* p_base_instance)
 {
@@ -74,6 +121,20 @@ void ExpressionView::_bind_methods()
     godot::ClassDB::bind_method(godot::D_METHOD("set_view", "view"), &ExpressionView::set_view);
 }
 
+uint64_t ExpressionView::num_columns() const
+{
+    ERR_FAIL_COND_V(view.is_null(), data.num_columns());
+
+    return view->num_columns() + data.num_columns();
+}
+
+uint64_t ExpressionView::num_rows() const
+{
+    ERR_FAIL_COND_V(view.is_null(), 0);
+
+    return view->num_rows();
+}
+
 uint64_t ExpressionView::get_column_index(const godot::String& p_column_name) const
 {
     for (uint64_t column = 0; column < data.num_columns(); ++column)
@@ -89,7 +150,7 @@ uint64_t ExpressionView::get_column_index(const godot::String& p_column_name) co
 
 godot::Error ExpressionView::add_expressions(const godot::TypedArray<ExpressionColumn>& p_columns)
 {
-    std::vector<ExpressionHeader> headers;
+    GodotVector<ExpressionHeader> headers;
     headers.reserve(p_columns.size());
     for (int i = 0; i < p_columns.size(); ++i)
     {

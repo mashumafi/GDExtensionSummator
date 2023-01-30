@@ -45,7 +45,7 @@ void BasicTable::add_columns(const godot::PackedStringArray& p_names)
 {
     ERR_FAIL_COND_MSG(p_names.size() == 0, "No columns supplied, ensure you are using a PackedStringArray.");
 
-    std::vector<godot::String> names;
+    GodotVector<godot::String> names;
     names.reserve(p_names.size());
     for (const godot::String& name : p_names)
         names.push_back(name);

@@ -3,7 +3,7 @@
 namespace morphy
 {
 
-void ViewAccessor::set_view(TableView* p_view)
+void ViewAccessor::set_view(ITableView* p_view)
 {
     view = p_view;
 }

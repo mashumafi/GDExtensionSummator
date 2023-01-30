@@ -3,10 +3,12 @@ extends Node
 const column_increment := 5
 const row_increment := 5
 
+func _ready():
+	for i in 5:
+		test_tables()
+	test_expression_view()
 
-func _ready() -> void:
-	test_add()
-
+func test_tables():
 	var start := Time.get_ticks_usec()
 	var table := BasicTable.new()
 
@@ -36,7 +38,7 @@ func _ready() -> void:
 	print("It took ", (Time.get_ticks_usec() - start) / 1000.0 , " milliseconds.")
 
 
-func test_add():
+func test_expression_view():
 	var table := BasicTable.new()
 	table.add_columns(PackedStringArray(["a", "b"]))
 	table.add_rows(1)
@@ -56,3 +58,5 @@ func test_add():
 	assert(view.get_cell(1, 0) == 2)
 	var sum = view.get_cell(2, 0);
 	assert(sum == 3)
+	assert(view.num_columns() == 3)
+	assert(view.num_rows() == 1)

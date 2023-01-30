@@ -14,7 +14,7 @@ class BasicTable : public MutableTableView
 {
     GDCLASS(BasicTable, MutableTableView);
 
-    TableData<godot::String, 4> data;
+    TableData<godot::String> data;
 
 protected:
     static void _bind_methods();
