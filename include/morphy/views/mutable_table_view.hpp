@@ -1,5 +1,5 @@
-#ifndef VIEWS_MUTABLE_TABLE_VIEW_HPP
-#define VIEWS_MUTABLE_TABLE_VIEW_HPP
+#ifndef MORPHY_VIEWS_MUTABLE_TABLE_VIEW_HPP
+#define MORPHY_VIEWS_MUTABLE_TABLE_VIEW_HPP
 
 #include <views/table_view.hpp>
 
@@ -22,4 +22,4 @@ public:
 
 } // namespace morphy
 
-#endif // VIEWS_MUTABLE_TABLE_VIEW_HPP
+#endif // MORPHY_VIEWS_MUTABLE_TABLE_VIEW_HPP

@@ -54,7 +54,7 @@ struct RecursiveExpressionExecutor : public ITableView {
 	DependencyTracker dependency_tracker;
 };
 
-} // namespace
+} //namespace
 
 godot::Variant ExpressionHeader::execute(const godot::Array &p_inputs, godot::Object *p_base_instance) {
 	godot::Variant result = expression->execute(p_inputs, p_base_instance);
@@ -190,4 +190,4 @@ const godot::Variant &ExpressionView::get_cell(uint64_t p_column,
 	}
 }
 
-} // namespace morphy
+} //namespace morphy

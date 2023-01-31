@@ -1,5 +1,5 @@
-#ifndef UTIL_HPP
-#define UTIL_HPP
+#ifndef MORPHY_UTIL_HPP
+#define MORPHY_UTIL_HPP
 
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/core/memory.hpp>
@@ -127,4 +127,4 @@ UniqueObject<T> make_unique() {
 
 } // namespace morphy
 
-#endif // UTIL_HPP
+#endif // MORPHY_UTIL_HPP

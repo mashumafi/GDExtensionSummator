@@ -13,19 +13,19 @@ env = SConscript("godot-cpp/SConstruct")
 # - LINKFLAGS are for linking flags
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.
-env.Append(CPPPATH=["morphy/include"])
-sources = [Glob("morphy/src/*.cpp"), Glob("morphy/src/views/*.cpp")]
+env.Append(CPPPATH=["include/morphy"])
+sources = [Glob("src/morphy/*.cpp"), Glob("src/morphy/views/*.cpp")]
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        "game/bin/summator/libgdsummator.{}.{}.framework/libgdsummator.{}.{}".format(
+        "game/bin/morphy/libgdmorphy.{}.{}.framework/libgdmorphy.{}.{}".format(
             env["platform"], env["target"], env["platform"], env["target"]
         ),
         source=sources,
     )
 else:
     library = env.SharedLibrary(
-        "game/bin/summator/libgdsummator{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+        "game/bin/morphy/libgdmorphy{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
         source=sources,
     )
 

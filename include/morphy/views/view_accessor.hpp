@@ -1,5 +1,5 @@
-#ifndef VIEWS_VIEW_ACCESSOR_HPP
-#define VIEWS_VIEW_ACCESSOR_HPP
+#ifndef MORPHY_VIEWS_VIEW_ACCESSOR_HPP
+#define MORPHY_VIEWS_VIEW_ACCESSOR_HPP
 
 #include <util.hpp>
 #include <views/column_accessor.hpp>
@@ -34,4 +34,4 @@ private:
 
 } // namespace morphy
 
-#endif // VIEWS_VIEW_ACCESSOR_HPP
+#endif // MORPHY_VIEWS_VIEW_ACCESSOR_HPP

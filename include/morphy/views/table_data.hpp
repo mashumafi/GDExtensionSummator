@@ -1,5 +1,5 @@
-#ifndef VIEWS_TABLE_DATA_HPP
-#define VIEWS_TABLE_DATA_HPP
+#ifndef MORPHY_VIEWS_TABLE_DATA_HPP
+#define MORPHY_VIEWS_TABLE_DATA_HPP
 
 #include <util.hpp>
 
@@ -97,4 +97,4 @@ private:
 
 } // namespace morphy
 
-#endif // VIEWS_TABLE_DATA_HPP
+#endif // MORPHY_VIEWS_TABLE_DATA_HPP

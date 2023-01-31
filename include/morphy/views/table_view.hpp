@@ -1,5 +1,5 @@
-#ifndef VIEWS_TABLE_VIEW_HPP
-#define VIEWS_TABLE_VIEW_HPP
+#ifndef MORPHY_VIEWS_TABLE_VIEW_HPP
+#define MORPHY_VIEWS_TABLE_VIEW_HPP
 
 #include <godot_cpp/classes/ref.hpp>
 
@@ -36,4 +36,4 @@ public:
 
 } // namespace morphy
 
-#endif // VIEWS_TABLE_VIEW_HPP
+#endif // MORPHY_VIEWS_TABLE_VIEW_HPP

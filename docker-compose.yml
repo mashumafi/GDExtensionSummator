@@ -8,4 +8,4 @@ services:
       dockerfile: clang.Dockerfile
     volumes:
       - .:/workdir
-    working_dir: /workdir/morphy
+    working_dir: /workdir

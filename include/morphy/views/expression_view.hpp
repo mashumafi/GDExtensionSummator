@@ -1,5 +1,5 @@
-#ifndef VIEWS_EXPRESSION_VIEW_HPP
-#define VIEWS_EXPRESSION_VIEW_HPP
+#ifndef MORPHY_VIEWS_EXPRESSION_VIEW_HPP
+#define MORPHY_VIEWS_EXPRESSION_VIEW_HPP
 
 #include <util.hpp>
 #include <views/table_data.hpp>
@@ -128,4 +128,4 @@ private:
 
 } // namespace morphy
 
-#endif // VIEWS_EXPRESSION_VIEW_HPP
+#endif // MORPHY_VIEWS_EXPRESSION_VIEW_HPP

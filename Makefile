@@ -1,15 +1,15 @@
-SOURCE:=$(shell cd morphy && find src | grep cpp$)
-HEADER:=$(shell cd morphy && find include | grep hpp$)
+SOURCE:=$(shell find src | grep cpp$)
+HEADER:=$(shell find include | grep hpp$)
 CODE=${SOURCE} ${HEADER}
 
 CLANG_FORMAT=clang-format-15 -style=file ${CODE}
 
 CLANG_TIDY=clang-tidy-15 -p . ${CODE} -checks=llvm-header-guard
 CLANG_TIDY_EXTRA= \
-	-Iinclude \
-	-I../godot-cpp/include \
-	-I../godot-cpp/gen/include \
-	-I../godot-cpp/gdextension \
+	-Iinclude/morphy \
+	-Igodot-cpp/include \
+	-Igodot-cpp/gen/include \
+	-Igodot-cpp/gdextension \
 	-std=c++17
 
 check-format:
