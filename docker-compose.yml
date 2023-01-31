@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+
+  clang:
+    build:
+      context: dockerfiles
+      dockerfile: clang.Dockerfile
+    volumes:
+      - .:/workdir
+    working_dir: /workdir/morphy
