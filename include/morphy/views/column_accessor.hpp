@@ -19,7 +19,7 @@ protected:
 	static void _bind_methods();
 
 private:
-	ITableView *view;
+	ITableView *view = nullptr;
 	uint64_t current_column = 0;
 };
 

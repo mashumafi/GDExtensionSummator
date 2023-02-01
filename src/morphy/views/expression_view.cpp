@@ -49,8 +49,8 @@ struct RecursiveExpressionExecutor : public ITableView {
 		return data->get_cell(column, row);
 	}
 
-	ITableView *view;
-	ExpressionTable *data;
+	ITableView *view = nullptr;
+	ExpressionTable *data = nullptr;
 	DependencyTracker dependency_tracker;
 };
 
@@ -149,8 +149,9 @@ godot::Error ExpressionView::add_expressions(const godot::TypedArray<ExpressionC
 
 	data.add_columns(std::move(headers));
 
-	if (view.is_null())
+	if (view.is_null()) {
 		return godot::OK;
+	}
 
 	data.add_rows(view->num_rows());
 

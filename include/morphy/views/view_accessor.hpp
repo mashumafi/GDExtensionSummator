@@ -27,7 +27,7 @@ protected:
 	ColumnAccessor *get_column(const godot::String &column_name);
 
 private:
-	ITableView *view;
+	ITableView *view = nullptr;
 	uint64_t current_row = 0;
 	GodotUMap<GodotString, UniqueObject<ColumnAccessor>> column_cache;
 };

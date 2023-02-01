@@ -5,6 +5,8 @@
 
 namespace morphy {
 
+constexpr uint64_t INVALID_INDEX = std::numeric_limits<uint64_t>::max();
+
 struct ITableView {
 	virtual uint64_t num_columns() const = 0;
 

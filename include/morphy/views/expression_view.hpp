@@ -13,7 +13,7 @@
 namespace morphy {
 
 struct ExpressionDependency {
-	uint64_t column;
+	uint64_t column = 0UL;
 	// Allow depending on an entire column
 	std::optional<uint64_t> row;
 
