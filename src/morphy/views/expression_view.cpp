@@ -4,6 +4,8 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include <utility>
+
 namespace morphy {
 
 namespace {
@@ -92,14 +94,15 @@ ExpressionView::get_column_index(const godot::String &p_column_name) const {
 
 godot::Error ExpressionView::compute_cell(ViewAccessor *base_instance, uint64_t column, uint64_t row) {
 	base_instance->set_current_row(row);
-	// Clear previous dependencies
+
 	ExpressionMeta *meta = data.get_cell_meta(column, row);
 	ERR_FAIL_COND_V_MSG(!meta, godot::FAILED, "No meta data found");
 
+	// Clear previous dependencies
 	for (const Dependency &dependency : meta->dependencies) {
 		auto requirement = requirements.find(dependency);
 		ERR_FAIL_COND_V_MSG(requirement == requirements.end(), godot::FAILED, "Missing requirement");
-		requirement->second.erase({ column, row });
+		size_t count = requirement->second.erase({ column, row });
 		if (requirement->second.empty()) {
 			requirements.erase(requirement);
 		}
@@ -109,6 +112,7 @@ godot::Error ExpressionView::compute_cell(ViewAccessor *base_instance, uint64_t 
 	DependencyTracker dependency_tracker;
 	base_instance->set_dependency_tracker(&dependency_tracker);
 
+	// Execute expression
 	ExpressionHeader &header = data.get_header(column);
 	godot::Array inputs;
 	data.set_cell(column, row, header.execute(inputs, base_instance));
@@ -116,17 +120,15 @@ godot::Error ExpressionView::compute_cell(ViewAccessor *base_instance, uint64_t 
 	// Store dependencies
 	meta->dependencies = dependency_tracker.get_dependencies();
 	for (const Dependency &dependency : meta->dependencies) {
-		auto itr = requirements.lower_bound(dependency);
-		if (itr == requirements.end() || itr->first != dependency) {
-			itr = requirements.insert(itr, { dependency, DependencyOwners() });
-		}
-		itr->second.insert({ column, row });
+		// Inserts into an existing requirement or creates an empty one
+		requirements[dependency].insert({ column, row });
 	}
 
 	auto updateDependencies = [&](Requirements::iterator dependers) {
 		if (dependers != requirements.end()) {
-			auto owners = dependers->second; // TODO: Remove copy
-			for (const DependencyOwner &owner : owners) {
+			// Snatching dependencies before they get destroyed
+			DependencyOwners owners;
+			for (const DependencyOwner &owner : std::exchange(dependers->second, owners)) {
 				compute_cell(base_instance, owner.column, owner.row);
 			}
 		}
