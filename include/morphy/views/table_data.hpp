@@ -90,6 +90,13 @@ public:
 		return rows[row][column].value;
 	}
 
+	M *get_cell_meta(uint64_t column, uint64_t row) {
+		ERR_FAIL_COND_V(rows.size() <= row, nullptr);
+		ERR_FAIL_COND_V(rows[row].size() <= column, nullptr);
+
+		return &rows[row][column].meta;
+	}
+
 private:
 	GodotVector<H> headers;
 	GodotVector<Row> rows;

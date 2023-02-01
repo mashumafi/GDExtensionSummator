@@ -13,6 +13,10 @@ void ViewAccessor::set_current_row(uint64_t p_current_row) {
 	current_row = p_current_row;
 }
 
+void ViewAccessor::set_dependency_tracker(DependencyTracker *p_dependency_tracker) {
+	dependency_tracker = p_dependency_tracker;
+}
+
 uint64_t ViewAccessor::row() const {
 	return current_row;
 }
@@ -35,6 +39,7 @@ ColumnAccessor *ViewAccessor::get_column(const godot::String &column_name) {
 	ColumnAccessor *const column_accessor = itr.first->second.get();
 	column_accessor->set_view(view);
 	column_accessor->set_current_column(column_index);
+	column_accessor->set_dependency_tracker(dependency_tracker);
 
 	return column_accessor;
 }

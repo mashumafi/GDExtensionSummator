@@ -1,6 +1,5 @@
 #include <util.hpp>
 #include <views/expression_view.hpp>
-#include <views/view_accessor.hpp>
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -8,51 +7,6 @@
 namespace morphy {
 
 namespace {
-
-class DependencyTracker {
-public:
-	// Adds a dependency and returns true if it succeeds, otherwise there could be
-	// a cycle
-	bool add_dependency(uint64_t column, std::optional<uint64_t> row) {
-		return depends_on.insert({ column, row }).second;
-	}
-
-private:
-	GodotSet<ExpressionDependency> depends_on;
-};
-
-// Executes expressions recursively
-// Tracks dependencies and detects cycles
-struct RecursiveExpressionExecutor : public ITableView {
-	virtual uint64_t num_columns() const {
-		return data->num_columns();
-	}
-
-	virtual uint64_t num_rows() const {
-		return data->num_rows();
-	}
-
-	virtual uint64_t get_column_index(const godot::String &p_column_name) const {
-		// TODO: This logic is duplicated below in ExpressionView::get_column_index
-		for (uint64_t column = 0; column < data->num_columns(); ++column) {
-			if (data->get_header(column).name == p_column_name) {
-				return column + (!view ? 0 : view->num_columns());
-			}
-		}
-
-		ERR_FAIL_COND_V(!view, INVALID_INDEX);
-
-		return view->get_column_index(p_column_name);
-	}
-
-	virtual const godot::Variant &get_cell(uint64_t column, uint64_t row) const {
-		return data->get_cell(column, row);
-	}
-
-	ITableView *view = nullptr;
-	ExpressionTable *data = nullptr;
-	DependencyTracker dependency_tracker;
-};
 
 } //namespace
 
@@ -136,6 +90,57 @@ ExpressionView::get_column_index(const godot::String &p_column_name) const {
 	return view->get_column_index(p_column_name);
 }
 
+godot::Error ExpressionView::compute_cell(ViewAccessor *base_instance, uint64_t column, uint64_t row) {
+	base_instance->set_current_row(row);
+	// Clear previous dependencies
+	ExpressionMeta *meta = data.get_cell_meta(column, row);
+	ERR_FAIL_COND_V_MSG(!meta, godot::FAILED, "No meta data found");
+
+	for (const Dependency &dependency : meta->dependencies) {
+		auto requirement = requirements.find(dependency);
+		ERR_FAIL_COND_V_MSG(requirement == requirements.end(), godot::FAILED, "Missing requirement");
+		requirement->second.erase({ column, row });
+		if (requirement->second.empty()) {
+			requirements.erase(requirement);
+		}
+	}
+
+	// Track new dependencies
+	DependencyTracker dependency_tracker;
+	base_instance->set_dependency_tracker(&dependency_tracker);
+
+	ExpressionHeader &header = data.get_header(column);
+	godot::Array inputs;
+	data.set_cell(column, row, header.execute(inputs, base_instance));
+
+	// Store dependencies
+	meta->dependencies = dependency_tracker.get_dependencies();
+	for (const Dependency &dependency : meta->dependencies) {
+		auto itr = requirements.lower_bound(dependency);
+		if (itr == requirements.end() || itr->first != dependency) {
+			itr = requirements.insert(itr, { dependency, DependencyOwners() });
+		}
+		itr->second.insert({ column, row });
+	}
+
+	auto updateDependencies = [&](Requirements::iterator dependers) {
+		if (dependers != requirements.end()) {
+			auto owners = dependers->second; // TODO: Remove copy
+			for (const DependencyOwner &owner : owners) {
+				compute_cell(base_instance, owner.column, owner.row);
+			}
+		}
+	};
+
+	auto dependers = requirements.find({ column + view->num_columns(), row });
+	updateDependencies(dependers);
+
+	auto column_dependers = requirements.find({ column + view->num_columns(), std::nullopt });
+	updateDependencies(column_dependers);
+
+	return godot::OK;
+}
+
 godot::Error ExpressionView::add_expressions(const godot::TypedArray<ExpressionColumn> &p_columns) {
 	GodotVector<ExpressionHeader> headers;
 	headers.reserve(p_columns.size());
@@ -157,23 +162,18 @@ godot::Error ExpressionView::add_expressions(const godot::TypedArray<ExpressionC
 
 	auto base_instance = make_unique<ViewAccessor>();
 	base_instance->set_view(this);
-	for (uint64_t row = 0; row < data.num_rows(); ++row) {
-		base_instance->set_current_row(row);
 
+	for (uint64_t row = 0; row < data.num_rows(); ++row) {
 		for (uint64_t column = 0; column < data.num_columns(); ++column) {
-			ExpressionHeader &header = data.get_header(column);
-			godot::Array inputs;
-			data.set_cell(column, row, header.execute(inputs, base_instance.get()));
+			compute_cell(base_instance.get(), column, row);
 		}
 	}
 
 	return godot::OK;
 }
 
-void ExpressionView::set_view(const godot::TypedArray<TableView> &p_view) {
-	view = p_view[0];
-
-	ERR_FAIL_COND_MSG(view.is_null(), "Invalid view");
+void ExpressionView::set_view(const godot::Ref<TableView> &p_view) {
+	view = p_view;
 
 	// TODO: Calculate expressions
 }

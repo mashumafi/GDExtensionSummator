@@ -3,6 +3,7 @@
 
 #include <util.hpp>
 #include <views/column_accessor.hpp>
+#include <views/dependency_tracker.hpp>
 #include <views/table_view.hpp>
 
 #include <godot_cpp/classes/object.hpp>
@@ -18,6 +19,7 @@ public:
 
 	void set_view(ITableView *p_view);
 	void set_current_row(uint64_t p_current_row);
+	void set_dependency_tracker(DependencyTracker *p_dependency_tracker);
 
 	uint64_t row() const;
 
@@ -29,6 +31,7 @@ protected:
 private:
 	ITableView *view = nullptr;
 	uint64_t current_row = 0;
+	DependencyTracker *dependency_tracker = nullptr;
 	GodotUMap<GodotString, UniqueObject<ColumnAccessor>> column_cache;
 };
 

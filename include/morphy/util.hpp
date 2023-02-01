@@ -35,6 +35,14 @@ struct GodotAllocator {
 	void deallocate(T *ptr, size_t) noexcept {
 		godot::DefaultAllocator::free(ptr);
 	}
+
+	bool operator==(const GodotAllocator &other) {
+		return this == &other;
+	}
+
+	bool operator!=(const GodotAllocator &other) {
+		return !this->operator==(other);
+	}
 };
 
 template <class Key, class T>

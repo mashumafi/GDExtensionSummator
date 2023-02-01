@@ -39,24 +39,33 @@ func test_tables():
 
 
 func test_expression_view():
-	var table := BasicTable.new()
+	var table = BasicTable.new()
 	table.add_columns(PackedStringArray(["a", "b"]))
 	table.add_rows(1)
 
 	table.set_cell(0, 0, 1)
 	table.set_cell(1, 0, 2)
 
-	var add := ExpressionColumn.new()
-	add.set_name("add")
-	add.set_expression("column('a').cell(row()) + column('b').cell(row())")
+	var c := ExpressionColumn.new()
+	c.set_name("c")
+	c.set_expression("column('e').cell(row())")
+	
+	var d := ExpressionColumn.new()
+	d.set_name("d")
+	d.set_expression("column('c').cell(row()) + column('e').cell(row())")
+	
+	var e := ExpressionColumn.new()
+	e.set_name("e")
+	e .set_expression("column('a').cell(row()) + column('b').cell(row())")
 
 	var view := ExpressionView.new()
-	view.set_view([table])
-	view.add_expressions([add])
+	view.set_view(table)
+	view.add_expressions([c, d, e])
 
 	assert(view.get_cell(0, 0) == 1)
 	assert(view.get_cell(1, 0) == 2)
-	var sum = view.get_cell(2, 0);
-	assert(sum == 3)
-	assert(view.num_columns() == 3)
+	assert(view.get_cell(2, 0) == 3)
+	assert(view.get_cell(3, 0) == 6)
+	assert(view.get_cell(4, 0) == 3)
+	assert(view.num_columns() == 5)
 	assert(view.num_rows() == 1)
