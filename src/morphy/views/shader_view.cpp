@@ -2,18 +2,18 @@
 #include <views/shader_view.hpp>
 
 #include <godot_cpp/classes/rd_shader_file.hpp>
+#include <godot_cpp/classes/rd_shader_source.hpp>
 #include <godot_cpp/classes/rd_shader_spirv.hpp>
 #include <godot_cpp/classes/rd_uniform.hpp>
 #include <godot_cpp/classes/rendering_device.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
-#include <godot_cpp/classes/rd_shader_source.hpp>
 #include <godot_cpp/variant/rid.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 namespace morphy {
 
-static const char* shader_source = R"GLSL(
+static const char *shader_source = R"GLSL(
 #version 450
 
 // Invocations in the (x, y, z) dimension
@@ -32,7 +32,7 @@ void main() {
 }
 )GLSL";
 
-godot::RID create_shader(godot::RenderingDevice* rd, const char* source) {
+godot::RID create_shader(godot::RenderingDevice *rd, const char *source) {
 	godot::Ref<godot::RDShaderSource> shader_source;
 	shader_source.instantiate();
 	shader_source->set_language(godot::RenderingDevice::ShaderLanguage::SHADER_LANGUAGE_GLSL);
@@ -46,8 +46,8 @@ godot::RID create_shader(godot::RenderingDevice* rd, const char* source) {
 	return rd->shader_create_from_spirv(shader_spirv);
 }
 
-godot::RID create_shader(godot::RenderingDevice* rd) {
-    auto ResourceLoader = godot::ResourceLoader::get_singleton();
+godot::RID create_shader(godot::RenderingDevice *rd) {
+	auto ResourceLoader = godot::ResourceLoader::get_singleton();
 	godot::Ref<godot::RDShaderFile> shader_file = ResourceLoader->load("res://cell.glsl");
 	if (shader_file.is_null()) {
 		godot::UtilityFunctions::print("Could not convert resource");
