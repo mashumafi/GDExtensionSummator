@@ -13,8 +13,7 @@
 
 namespace morphy {
 
-godot::String shader_raw = R"GLSL(
-#[compute]
+static const char* shader_source = R"GLSL(
 #version 450
 
 // Invocations in the (x, y, z) dimension
@@ -32,6 +31,20 @@ void main() {
     my_data_buffer.data[gl_GlobalInvocationID.x] *= 2.0;
 }
 )GLSL";
+
+godot::RID create_shader(godot::RenderingDevice* rd, const char* source) {
+	godot::Ref<godot::RDShaderSource> shader_source;
+	shader_source.instantiate();
+	shader_source->set_language(godot::RenderingDevice::ShaderLanguage::SHADER_LANGUAGE_GLSL);
+	shader_source->set_stage_source(godot::RenderingDevice::ShaderStage::SHADER_STAGE_COMPUTE, source);
+
+	godot::Ref<godot::RDShaderSPIRV> shader_spirv = rd->shader_compile_spirv_from_source(shader_source);
+	if (shader_spirv.is_null()) {
+		godot::UtilityFunctions::print(shader_spirv->get_stage_compile_error(godot::RenderingDevice::ShaderStage::SHADER_STAGE_COMPUTE));
+		return godot::RID();
+	}
+	return rd->shader_create_from_spirv(shader_spirv);
+}
 
 godot::RID create_shader(godot::RenderingDevice* rd) {
     auto ResourceLoader = godot::ResourceLoader::get_singleton();
@@ -53,7 +66,8 @@ ShaderView::ShaderView() {
 
 	// Create a local RenderingDevice
 	UniqueObject<godot::RenderingDevice> rd(RenderingServer->create_local_rendering_device());
-	godot::RID shader = create_shader(rd.get());
+	//godot::RID shader = create_shader(rd.get());
+	godot::RID shader = create_shader(rd.get(), shader_source);
 
 	// Provide input data
 	godot::PackedFloat32Array input;
