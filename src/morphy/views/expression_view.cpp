@@ -8,10 +8,6 @@
 
 namespace morphy {
 
-namespace {
-
-} //namespace
-
 godot::Variant ExpressionHeader::execute(const godot::Array &p_inputs, godot::Object *p_base_instance) {
 	godot::Variant result = expression->execute(p_inputs, p_base_instance);
 	if (expression->has_execute_failed()) {
@@ -27,7 +23,9 @@ godot::Error ExpressionColumn::set_name(const godot::String &p_name) {
 	return godot::OK;
 }
 
-const godot::String &ExpressionColumn::get_name() const { return name; }
+const godot::String &ExpressionColumn::get_name() const {
+	return name;
+}
 
 godot::Error ExpressionColumn::set_expression(const godot::String &p_expression) {
 	godot::Ref<godot::Expression> expression;
@@ -79,8 +77,7 @@ uint64_t ExpressionView::num_rows() const {
 	return view->num_rows();
 }
 
-uint64_t
-ExpressionView::get_column_index(const godot::String &p_column_name) const {
+uint64_t ExpressionView::get_column_index(const godot::String &p_column_name) const {
 	for (uint64_t column = 0; column < data.num_columns(); ++column) {
 		if (data.get_header(column).name == p_column_name) {
 			return column + (view.is_null() ? 0 : view->num_columns());
@@ -101,10 +98,11 @@ godot::Error ExpressionView::compute_cell(ViewAccessor *base_instance, uint64_t 
 	// Clear previous dependencies
 	for (const Dependency &dependency : meta->dependencies) {
 		auto requirement = requirements.find(dependency);
-		ERR_FAIL_COND_V_MSG(requirement == requirements.end(), godot::FAILED, "Missing requirement");
-		size_t count = requirement->second.erase({ column, row });
-		if (requirement->second.empty()) {
-			requirements.erase(requirement);
+		if (requirement != requirements.end()) {
+			requirement->second.erase({ column, row });
+			if (requirement->second.empty()) {
+				requirements.erase(requirement);
+			}
 		}
 	}
 

@@ -24,8 +24,7 @@ uint64_t BasicTable::num_rows() const {
 	return data.num_rows();
 }
 
-uint64_t
-BasicTable::get_column_index(const godot::String &p_column_name) const {
+uint64_t BasicTable::get_column_index(const godot::String &p_column_name) const {
 	for (uint64_t column = 0; column < data.num_columns(); ++column) {
 		if (data.get_header(column) == p_column_name) {
 			return column;

@@ -7,6 +7,7 @@ func _ready():
 	for i in 5:
 		test_tables()
 	test_expression_view()
+	test_shader_view()
 
 func test_tables():
 	var start := Time.get_ticks_usec()
@@ -69,3 +70,6 @@ func test_expression_view():
 	assert(view.get_cell(4, 0) == 3)
 	assert(view.num_columns() == 5)
 	assert(view.num_rows() == 1)
+
+func test_shader_view():
+	var view := ShaderView.new()

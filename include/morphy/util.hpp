@@ -5,11 +5,13 @@
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/string.hpp>
 
+#include <functional>
 #include <limits>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -21,26 +23,28 @@ template <class T>
 struct GodotAllocator {
 	using value_type = T;
 
-	explicit GodotAllocator() {
+	inline constexpr GodotAllocator() noexcept {
 	}
 
 	template <class U>
-	constexpr GodotAllocator(const GodotAllocator<U> &) noexcept {
+	inline constexpr GodotAllocator(const GodotAllocator<U> &) noexcept {
 	}
 
-	[[nodiscard]] T *allocate(size_t n) {
+	[[nodiscard]] inline constexpr T *allocate(size_t n) {
 		return static_cast<T *>(godot::DefaultAllocator::alloc(n * sizeof(T)));
 	}
 
-	void deallocate(T *ptr, size_t) noexcept {
+	inline constexpr void deallocate(T *ptr, size_t) noexcept {
 		godot::DefaultAllocator::free(ptr);
 	}
 
-	bool operator==(const GodotAllocator &other) {
-		return this == &other;
+	template <class U>
+	inline constexpr bool operator==(const GodotAllocator<U> &other) const noexcept {
+		return true;
 	}
 
-	bool operator!=(const GodotAllocator &other) {
+	template <class U>
+	inline constexpr bool operator!=(const GodotAllocator<U> &other) const noexcept {
 		return !this->operator==(other);
 	}
 };
@@ -64,8 +68,7 @@ using GodotUSet = std::unordered_set<Key, Hash, KeyEqual, GodotAllocator<Key>>;
 template <class T>
 using GodotVector = std::vector<T, GodotAllocator<T>>;
 
-// TODO: replace std::allocator with GodotAllocator
-using GodotString = std::basic_string<char32_t, std::char_traits<char32_t>, std::allocator<char32_t>>;
+using GodotString = std::basic_string<char32_t, std::char_traits<char32_t>, GodotAllocator<char32_t>>;
 
 // Object RAII
 struct ObjectDeleter {
@@ -83,5 +86,13 @@ UniqueObject<T> make_unique() {
 }
 
 } // namespace morphy
+
+// TODO: Why does this need to be explicitly done
+template <>
+struct std::hash<morphy::GodotString> {
+	size_t operator()(const morphy::GodotString &s) const noexcept {
+		return std::hash<std::u32string_view>{}(s.data());
+	}
+};
 
 #endif // MORPHY_UTIL_HPP
