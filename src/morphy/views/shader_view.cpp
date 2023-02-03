@@ -25,10 +25,14 @@ layout(set = 0, binding = 0, std430) restrict buffer MyDataBuffer {
 }
 my_data_buffer;
 
+int row() {
+	return int(gl_GlobalInvocationID.x);
+}
+
 // The code we want to execute in each invocation
 void main() {
     // gl_GlobalInvocationID.x uniquely identifies this invocation across all work groups
-    my_data_buffer.data[gl_GlobalInvocationID.x] *= 2.0;
+    my_data_buffer.data[row()] *= 2.0;
 }
 )GLSL";
 
@@ -39,23 +43,23 @@ godot::RID create_shader(godot::RenderingDevice *rd, const char *source) {
 	shader_source->set_stage_source(godot::RenderingDevice::ShaderStage::SHADER_STAGE_COMPUTE, source);
 
 	godot::Ref<godot::RDShaderSPIRV> shader_spirv = rd->shader_compile_spirv_from_source(shader_source);
-	if (shader_spirv.is_null()) {
-		godot::UtilityFunctions::print(shader_spirv->get_stage_compile_error(godot::RenderingDevice::ShaderStage::SHADER_STAGE_COMPUTE));
-		return godot::RID();
+	godot::RID rid = rd->shader_create_from_spirv(shader_spirv);
+	if (!rid.is_valid()) {
+		godot::UtilityFunctions::push_error(shader_spirv->get_stage_compile_error(godot::RenderingDevice::ShaderStage::SHADER_STAGE_COMPUTE));
 	}
-	return rd->shader_create_from_spirv(shader_spirv);
+	return rid;
 }
 
 godot::RID create_shader(godot::RenderingDevice *rd) {
 	auto ResourceLoader = godot::ResourceLoader::get_singleton();
 	godot::Ref<godot::RDShaderFile> shader_file = ResourceLoader->load("res://cell.glsl");
 	if (shader_file.is_null()) {
-		godot::UtilityFunctions::print("Could not convert resource");
+		godot::UtilityFunctions::push_error("Could not convert resource");
 		return godot::RID();
 	}
 	godot::Ref<godot::RDShaderSPIRV> shader_spirv = shader_file->get_spirv();
 	if (shader_spirv.is_null()) {
-		godot::UtilityFunctions::print(shader_file->get_base_error());
+		godot::UtilityFunctions::push_error(shader_file->get_base_error());
 		return godot::RID();
 	}
 	return rd->shader_create_from_spirv(shader_spirv);
