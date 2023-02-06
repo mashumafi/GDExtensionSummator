@@ -42,7 +42,7 @@ static const char *shader_main_end = R"GLSL(
 
 namespace {
 
-float to_float(const godot::Variant& v) {
+float to_float(const godot::Variant &v) {
 	switch (v.get_type()) {
 		case godot::Variant::INT: {
 			return (int)v;

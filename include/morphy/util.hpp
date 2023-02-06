@@ -2,9 +2,9 @@
 #define MORPHY_UTIL_HPP
 
 #include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include <functional>
@@ -93,15 +93,15 @@ public:
 		ticks = Time->get_ticks_usec();
 	}
 
-	void update(const godot::String& msg) {
+	void update(const godot::String &msg) {
 		uint64_t end = Time->get_ticks_usec();
 		godot::UtilityFunctions::print(msg, " took ", (end - ticks) / 1000.0, " milliseconds.");
 		ticks = Time->get_ticks_usec();
 	}
-private:
 
+private:
 	uint64_t ticks;
-	godot::Time* Time = godot::Time::get_singleton();
+	godot::Time *Time = godot::Time::get_singleton();
 };
 
 } // namespace morphy

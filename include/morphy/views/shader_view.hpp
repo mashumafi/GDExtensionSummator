@@ -1,8 +1,8 @@
 #ifndef MORPHY_VIEWS_SHADER_VIEW_HPP
 #define MORPHY_VIEWS_SHADER_VIEW_HPP
 
-#include <views/table_view.hpp>
 #include <views/table_data.hpp>
+#include <views/table_view.hpp>
 
 #include <godot_cpp/classes/rd_shader_spirv.hpp>
 
