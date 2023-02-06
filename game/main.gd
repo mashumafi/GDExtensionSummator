@@ -73,3 +73,9 @@ func test_expression_view():
 
 func test_shader_view():
 	var view := ShaderView.new()
+	var source_code = """
+		float compute_cell(row_t row) {
+			return row.data * 2.0;
+		}
+	"""
+	view.add_column("shader", source_code, ["data"])

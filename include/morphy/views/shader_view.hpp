@@ -12,6 +12,8 @@ public:
 	ShaderView();
 	virtual ~ShaderView();
 
+	void add_column(const godot::String &name, const godot::String &compute_cell, const godot::TypedArray<godot::String> &depends);
+
 protected:
 	static void _bind_methods();
 

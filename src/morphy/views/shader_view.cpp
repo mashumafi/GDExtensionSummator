@@ -13,30 +13,31 @@
 
 namespace morphy {
 
-static const char *shader_source = R"GLSL(
+static const char *shader_header = R"GLSL(
 #version 450
 
-// Invocations in the (x, y, z) dimension
 layout(local_size_x = 3, local_size_y = 1, local_size_z = 1) in;
 
-// A binding to the buffer we create in our script
-layout(set = 0, binding = 0, std430) restrict buffer MyDataBuffer {
+layout(set = 0, binding = 0, std430) restrict buffer table_t {
     float data[];
-}
-my_data_buffer;
+} table;
 
-int row() {
-	return int(gl_GlobalInvocationID.x);
-}
+struct row_t {
+	float data;
+};
+)GLSL";
 
-// The code we want to execute in each invocation
+static const char *shader_main = R"GLSL(
 void main() {
-    // gl_GlobalInvocationID.x uniquely identifies this invocation across all work groups
-    my_data_buffer.data[row()] *= 2.0;
+    row_t row;
+	row.data = table.data[gl_GlobalInvocationID.x];
+    table.data[gl_GlobalInvocationID.x] = compute_cell(row);
 }
 )GLSL";
 
-godot::RID create_shader(godot::RenderingDevice *rd, const char *source) {
+namespace {
+
+godot::RID create_shader(godot::RenderingDevice *rd, const godot::String &source) {
 	godot::Ref<godot::RDShaderSource> shader_source;
 	shader_source.instantiate();
 	shader_source->set_language(godot::RenderingDevice::ShaderLanguage::SHADER_LANGUAGE_GLSL);
@@ -50,28 +51,34 @@ godot::RID create_shader(godot::RenderingDevice *rd, const char *source) {
 	return rid;
 }
 
-godot::RID create_shader(godot::RenderingDevice *rd) {
-	auto ResourceLoader = godot::ResourceLoader::get_singleton();
-	godot::Ref<godot::RDShaderFile> shader_file = ResourceLoader->load("res://cell.glsl");
-	if (shader_file.is_null()) {
-		godot::UtilityFunctions::push_error("Could not convert resource");
-		return godot::RID();
-	}
-	godot::Ref<godot::RDShaderSPIRV> shader_spirv = shader_file->get_spirv();
-	if (shader_spirv.is_null()) {
-		godot::UtilityFunctions::push_error(shader_file->get_base_error());
-		return godot::RID();
-	}
-	return rd->shader_create_from_spirv(shader_spirv);
+godot::String create_source(const godot::String &compute_cell, const godot::TypedArray<godot::String> &depends) {
+	godot::String source;
+	source += shader_header;
+	source += compute_cell;
+	source += shader_main;
+
+	return source;
 }
 
+} //namespace
+
 ShaderView::ShaderView() {
+}
+
+ShaderView::~ShaderView() {
+}
+
+void ShaderView::_bind_methods() {
+	godot::ClassDB::bind_method(godot::D_METHOD("add_column", "name", "compute_cell", "depends"), &ShaderView::add_column);
+}
+
+void ShaderView::add_column(const godot::String &name, const godot::String &compute_cell, const godot::TypedArray<godot::String> &depends) {
 	auto RenderingServer = godot::RenderingServer::get_singleton();
 
 	// Create a local RenderingDevice
 	UniqueObject<godot::RenderingDevice> rd(RenderingServer->create_local_rendering_device());
 	//godot::RID shader = create_shader(rd.get());
-	godot::RID shader = create_shader(rd.get(), shader_source);
+	godot::RID shader = create_shader(rd.get(), create_source(compute_cell, depends));
 
 	// Provide input data
 	godot::PackedFloat32Array input;
@@ -116,12 +123,6 @@ ShaderView::ShaderView() {
 	rd->free_rid(uniform_set);
 	rd->free_rid(buffer);
 	rd->free_rid(shader);
-}
-
-ShaderView::~ShaderView() {
-}
-
-void ShaderView::_bind_methods() {
 }
 
 } //namespace morphy
