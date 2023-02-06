@@ -19,7 +19,7 @@ struct Cell {
 template <typename H, typename M = EmptyMeta>
 class TableData {
 public:
-	using Cell = Cell<M>;
+	typedef struct Cell<M> Cell;
 	using Row = GodotVector<Cell>;
 
 	uint64_t num_columns() const {

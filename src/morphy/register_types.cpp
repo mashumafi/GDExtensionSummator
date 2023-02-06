@@ -3,6 +3,7 @@
 #include <views/column_accessor.hpp>
 #include <views/expression_view.hpp>
 #include <views/mutable_table_view.hpp>
+#include <views/shader_view.hpp>
 #include <views/table_view.hpp>
 #include <views/view_accessor.hpp>
 
@@ -26,6 +27,7 @@ void initialize_morphy_types(godot::ModuleInitializationLevel p_level) {
 
 	godot::ClassDB::register_class<morphy::ExpressionColumn>();
 	godot::ClassDB::register_class<morphy::ExpressionView>();
+	godot::ClassDB::register_class<morphy::ShaderView>();
 }
 
 void uninitialize_morphy_types(godot::ModuleInitializationLevel p_level) {

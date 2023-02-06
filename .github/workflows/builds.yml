@@ -96,11 +96,11 @@ jobs:
       - name: Delete compilation files
         if: ${{ matrix.platform == 'windows' }}
         run: |
-          Remove-Item game/bin/summator/* -Include *.exp,*.lib,*.pdb -Force
+          Remove-Item game/bin/morphy/* -Include *.exp,*.lib,*.pdb -Force
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.event.repository.name }}
           path: |
-            ${{ github.workspace }}/game/bin/summator/*
+            ${{ github.workspace }}/game/bin/morphy/*

@@ -44,4 +44,4 @@ ColumnAccessor *ViewAccessor::get_column(const godot::String &column_name) {
 	return column_accessor;
 }
 
-} // namespace morphy
+} //namespace morphy

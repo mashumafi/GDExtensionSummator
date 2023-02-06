@@ -7,6 +7,7 @@ func _ready():
 	for i in 5:
 		test_tables()
 	test_expression_view()
+	test_shader_view()
 
 func test_tables():
 	var start := Time.get_ticks_usec()
@@ -46,6 +47,8 @@ func test_expression_view():
 	table.set_cell(0, 0, 1)
 	table.set_cell(1, 0, 2)
 
+	var start := Time.get_ticks_usec()
+
 	var c := ExpressionColumn.new()
 	c.set_name("c")
 	c.set_expression("column('e').cell(row())")
@@ -62,6 +65,8 @@ func test_expression_view():
 	view.set_view(table)
 	view.add_expressions([c, d, e])
 
+	print("Expressions took ", (Time.get_ticks_usec() - start) / 1000.0 , " milliseconds.")
+
 	assert(view.get_cell(0, 0) == 1)
 	assert(view.get_cell(1, 0) == 2)
 	assert(view.get_cell(2, 0) == 3)
@@ -69,3 +74,28 @@ func test_expression_view():
 	assert(view.get_cell(4, 0) == 3)
 	assert(view.num_columns() == 5)
 	assert(view.num_rows() == 1)
+
+func test_shader_view():
+	var table = BasicTable.new()
+	table.add_columns(PackedStringArray(["a", "b"]))
+	var num_rows := 100
+	table.add_rows(100)
+	for row in num_rows:
+		table.set_cell(0, row, row)
+		table.set_cell(1, row, row + 1)
+
+	var start := Time.get_ticks_usec()
+
+	var view := ShaderView.new()
+	view.set_view(table)
+	var source_code = """
+		float compute_cell(row_t row) {
+			return row.a + row.b;
+		}
+	"""
+	view.add_column("shader", source_code, ["a", "b"])
+
+	print("Shaders took ", (Time.get_ticks_usec() - start) / 1000.0 , " milliseconds.")
+
+	for row in num_rows:
+		assert(view.get_cell(2, row) == (row + row + 1))
