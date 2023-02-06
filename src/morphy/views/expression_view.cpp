@@ -178,8 +178,7 @@ void ExpressionView::set_view(const godot::Ref<TableView> &p_view) {
 	// TODO: Calculate expressions
 }
 
-const godot::Variant &ExpressionView::get_cell(uint64_t p_column,
-		uint64_t p_row) const {
+const godot::Variant &ExpressionView::get_cell(uint64_t p_column, uint64_t p_row) const {
 	static const godot::Variant nil;
 
 	ERR_FAIL_COND_V_MSG(view.is_null(), nil, "No view");
