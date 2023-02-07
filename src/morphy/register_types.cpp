@@ -27,6 +27,7 @@ void initialize_morphy_types(godot::ModuleInitializationLevel p_level) {
 
 	godot::ClassDB::register_class<morphy::ExpressionColumn>();
 	godot::ClassDB::register_class<morphy::ExpressionView>();
+	godot::ClassDB::register_class<morphy::ShaderColumn>();
 	godot::ClassDB::register_class<morphy::ShaderView>();
 }
 

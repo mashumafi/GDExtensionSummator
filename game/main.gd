@@ -3,11 +3,15 @@ extends Node
 const column_increment := 5
 const row_increment := 5
 
+@onready var debug_text := $debug_text as RichTextLabel
+
 func _ready():
 	for i in 5:
 		test_tables()
 	test_expression_view()
+	test_expression_view_stress()
 	test_shader_view()
+	
 
 func test_tables():
 	var start := Time.get_ticks_usec()
@@ -37,7 +41,6 @@ func test_tables():
 				assert(table.get_cell(column, row) == row * (table.num_columns() - column_increment) + column)
 
 	print("It took ", (Time.get_ticks_usec() - start) / 1000.0 , " milliseconds.")
-
 
 func test_expression_view():
 	var table = BasicTable.new()
@@ -75,27 +78,62 @@ func test_expression_view():
 	assert(view.num_columns() == 5)
 	assert(view.num_rows() == 1)
 
-func test_shader_view():
+func test_expression_view_stress():
 	var table = BasicTable.new()
 	table.add_columns(PackedStringArray(["a", "b"]))
-	var num_rows := 100
-	table.add_rows(100)
+	var num_rows := 100000
+	table.add_rows(num_rows)
+
 	for row in num_rows:
 		table.set_cell(0, row, row)
 		table.set_cell(1, row, row + 1)
+
+	var c := ExpressionColumn.new()
+	c.set_name("c")
+	c.set_expression("column('a').cell(row()) + column('b').cell(row())")
+
+	var d := ExpressionColumn.new()
+	d.set_name("d")
+	d.set_expression("column('a').cell(row()) + column('b').cell(row()) + column('c').cell(row())")
+
+	var start := Time.get_ticks_usec()
+
+	var view := ExpressionView.new()
+	view.set_view(table)
+	view.add_expressions([c, d])
+
+	debug_text.text += "Expressions took " + String.num((Time.get_ticks_usec() - start) / 1000.0) + " milliseconds.\n"
+
+	for row in num_rows:
+		var value = view.get_cell(2, row)
+		assert(value == (row + row + 1))
+
+
+func test_shader_view():
+	var table = BasicTable.new()
+	table.add_columns(PackedStringArray(["a", "b"]))
+	var num_rows := 10000
+	table.add_rows(num_rows)
+	for row in num_rows:
+		table.set_cell(0, row, row)
+		table.set_cell(1, row, row + 1)
+
+	var column = ShaderColumn.new()
+	column.set_name("shader")
+	column.set_shader("""
+		float compute_cell(row_t row) {
+			return row.a + row.b;
+		}
+	""", ["a", "b"])
 
 	var start := Time.get_ticks_usec()
 
 	var view := ShaderView.new()
 	view.set_view(table)
-	var source_code = """
-		float compute_cell(row_t row) {
-			return row.a + row.b;
-		}
-	"""
-	view.add_column("shader", source_code, ["a", "b"])
+	view.add_columns([column])
 
-	print("Shaders took ", (Time.get_ticks_usec() - start) / 1000.0 , " milliseconds.")
+	debug_text.text += "Shaders took " + String.num((Time.get_ticks_usec() - start) / 1000.0) + " milliseconds.\n"
 
 	for row in num_rows:
-		assert(view.get_cell(2, row) == (row + row + 1))
+		var value = view.get_cell(2, row)
+		assert(value == (row + row + 1))

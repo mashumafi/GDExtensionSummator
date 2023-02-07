@@ -89,11 +89,11 @@ UniqueObject<T> make_unique() {
 
 class GodotTicker {
 public:
-	GodotTicker() {
+	inline GodotTicker() noexcept {
 		ticks = Time->get_ticks_usec();
 	}
 
-	void update(const godot::String &msg) {
+	inline void update(const godot::String &msg) noexcept {
 		uint64_t end = Time->get_ticks_usec();
 		godot::UtilityFunctions::print(msg, " took ", (end - ticks) / 1000.0, " milliseconds.");
 		ticks = Time->get_ticks_usec();
