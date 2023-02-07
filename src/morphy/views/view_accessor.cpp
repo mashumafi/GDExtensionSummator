@@ -32,16 +32,23 @@ ColumnAccessor *ViewAccessor::get_column(const godot::String &column_name) {
 
 	ERR_FAIL_COND_V_MSG(!view, nil, "Invalid view");
 
-	uint64_t column_index = view->get_column_index(column_name);
-	ERR_FAIL_COND_V_MSG(column_index == INVALID_INDEX, nil, "Column not found");
+	auto cached_column = column_cache.find(column_name.ptr());
+	if (cached_column != column_cache.end()) {
+		ColumnAccessor *const column_accessor = cached_column->second.get();
+		column_accessor->set_dependency_tracker(dependency_tracker);
+		return column_accessor;
+	} else {
+		uint64_t column_index = view->get_column_index(column_name);
+		ERR_FAIL_COND_V_MSG(column_index == INVALID_INDEX, nil, "Column not found");
 
-	auto itr = column_cache.insert_or_assign(column_name.ptr(), make_unique<ColumnAccessor>());
-	ColumnAccessor *const column_accessor = itr.first->second.get();
-	column_accessor->set_view(view);
-	column_accessor->set_current_column(column_index);
-	column_accessor->set_dependency_tracker(dependency_tracker);
+		auto itr = column_cache.emplace(column_name.ptr(), make_unique<ColumnAccessor>());
+		ColumnAccessor *const column_accessor = itr.first->second.get();
+		column_accessor->set_view(view);
+		column_accessor->set_current_column(column_index);
+		column_accessor->set_dependency_tracker(dependency_tracker);
 
-	return column_accessor;
+		return column_accessor;
+	}
 }
 
 } //namespace morphy

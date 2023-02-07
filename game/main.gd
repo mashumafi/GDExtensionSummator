@@ -81,7 +81,7 @@ func test_expression_view():
 func test_expression_view_stress():
 	var table = BasicTable.new()
 	table.add_columns(PackedStringArray(["a", "b"]))
-	var num_rows := 100000
+	var num_rows := 10_0000
 	table.add_rows(num_rows)
 
 	for row in num_rows:
@@ -92,15 +92,11 @@ func test_expression_view_stress():
 	c.set_name("c")
 	c.set_expression("column('a').cell(row()) + column('b').cell(row())")
 
-	var d := ExpressionColumn.new()
-	d.set_name("d")
-	d.set_expression("column('a').cell(row()) + column('b').cell(row()) + column('c').cell(row())")
-
 	var start := Time.get_ticks_usec()
 
 	var view := ExpressionView.new()
 	view.set_view(table)
-	view.add_expressions([c, d])
+	view.add_expressions([c])
 
 	debug_text.text += "Expressions took " + String.num((Time.get_ticks_usec() - start) / 1000.0) + " milliseconds.\n"
 
@@ -112,7 +108,7 @@ func test_expression_view_stress():
 func test_shader_view():
 	var table = BasicTable.new()
 	table.add_columns(PackedStringArray(["a", "b"]))
-	var num_rows := 10000
+	var num_rows := 10_000
 	table.add_rows(num_rows)
 	for row in num_rows:
 		table.set_cell(0, row, row)
