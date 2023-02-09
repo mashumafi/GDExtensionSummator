@@ -1,5 +1,6 @@
 #include <register_types.hpp>
 #include <views/basic_table.hpp>
+#include <views/callable_view.hpp>
 #include <views/column_accessor.hpp>
 #include <views/expression_view.hpp>
 #include <views/mutable_table_view.hpp>
@@ -25,8 +26,12 @@ void initialize_morphy_types(godot::ModuleInitializationLevel p_level) {
 
 	godot::ClassDB::register_class<morphy::BasicTable>();
 
+	godot::ClassDB::register_class<morphy::CallableColumn>();
+	godot::ClassDB::register_class<morphy::CallableView>();
+
 	godot::ClassDB::register_class<morphy::ExpressionColumn>();
 	godot::ClassDB::register_class<morphy::ExpressionView>();
+
 	godot::ClassDB::register_class<morphy::ShaderColumn>();
 	godot::ClassDB::register_class<morphy::ShaderView>();
 }

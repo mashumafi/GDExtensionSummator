@@ -2,6 +2,7 @@ extends Node
 
 const column_increment := 5
 const row_increment := 5
+const STRESS_SIZE := 5_000
 
 @onready var debug_text := $debug_text as RichTextLabel
 
@@ -10,8 +11,8 @@ func _ready():
 		test_tables()
 	test_expression_view()
 	test_expression_view_stress()
+	test_callable_view_stress()
 	test_shader_view()
-	
 
 func test_tables():
 	var start := Time.get_ticks_usec()
@@ -79,18 +80,22 @@ func test_expression_view():
 	assert(view.num_rows() == 1)
 
 func test_expression_view_stress():
+	var c := ExpressionColumn.new()
+	c.set_name("c")
+	c.set_expression("column('a').cell(row()) + column('b').cell(row())")
+
+	var d := ExpressionColumn.new()
+	d.set_name("d")
+	d.set_expression("column('a').cell(row()) + column('b').cell(row()) + column('c').cell(row())")
+
 	var table = BasicTable.new()
 	table.add_columns(PackedStringArray(["a", "b"]))
-	var num_rows := 10_0000
+	var num_rows := STRESS_SIZE
 	table.add_rows(num_rows)
 
 	for row in num_rows:
 		table.set_cell(0, row, row)
 		table.set_cell(1, row, row + 1)
-
-	var c := ExpressionColumn.new()
-	c.set_name("c")
-	c.set_expression("column('a').cell(row()) + column('b').cell(row())")
 
 	var start := Time.get_ticks_usec()
 
@@ -98,37 +103,68 @@ func test_expression_view_stress():
 	view.set_view(table)
 	view.add_expressions([c])
 
-	debug_text.text += "Expressions took " + String.num((Time.get_ticks_usec() - start) / 1000.0) + " milliseconds.\n"
+	var end := Time.get_ticks_usec()
+	debug_text.text += "Expressions took " + String.num((end - start) / 1000.0) + " milliseconds.\n"
 
 	for row in num_rows:
 		var value = view.get_cell(2, row)
 		assert(value == (row + row + 1))
 
 
-func test_shader_view():
+func test_callable_view_stress():
+	var c := CallableColumn.new()
+	c.set_name("c")
+	c.set_callable(func (row: ViewAccessor):
+		return row.column("a").cell(row.row()) + row.column("b").cell(row.row()))
+
 	var table = BasicTable.new()
 	table.add_columns(PackedStringArray(["a", "b"]))
-	var num_rows := 10_000
+	var num_rows := STRESS_SIZE
 	table.add_rows(num_rows)
+
 	for row in num_rows:
 		table.set_cell(0, row, row)
 		table.set_cell(1, row, row + 1)
 
-	var column = ShaderColumn.new()
-	column.set_name("shader")
-	column.set_shader("""
+	var start := Time.get_ticks_usec()
+
+	var view := CallableView.new()
+	view.set_view(table)
+	view.add_callables([c])
+
+	var end := Time.get_ticks_usec()
+	debug_text.text += "Callables took " + String.num((end - start) / 1000.0) + " milliseconds.\n"
+
+	for row in num_rows:
+		var value = view.get_cell(2, row)
+		assert(value == (row + row + 1))
+
+func test_shader_view():
+	var c = ShaderColumn.new()
+	c.set_name("c")
+	c.set_shader("""
 		float compute_cell(row_t row) {
 			return row.a + row.b;
 		}
 	""", ["a", "b"])
 
+	var table = BasicTable.new()
+	table.add_columns(PackedStringArray(["a", "b"]))
+	var num_rows := STRESS_SIZE
+	table.add_rows(num_rows)
+	for row in num_rows:
+		table.set_cell(0, row, row)
+		table.set_cell(1, row, row + 1)
+
+
 	var start := Time.get_ticks_usec()
 
 	var view := ShaderView.new()
 	view.set_view(table)
-	view.add_columns([column])
+	view.add_columns([c])
 
-	debug_text.text += "Shaders took " + String.num((Time.get_ticks_usec() - start) / 1000.0) + " milliseconds.\n"
+	var end := Time.get_ticks_usec()
+	debug_text.text += "Shaders took " + String.num((end - start) / 1000.0) + " milliseconds.\n"
 
 	for row in num_rows:
 		var value = view.get_cell(2, row)
