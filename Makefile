@@ -1,11 +1,12 @@
-SOURCE:=$(shell find src | grep cpp$)
-HEADER:=$(shell find include | grep hpp$)
+SOURCE:=$(shell find src/morphy | grep cpp$)
+HEADER:=$(shell find include/morphy | grep hpp$)
 CODE=${SOURCE} ${HEADER}
 
 CLANG_FORMAT=clang-format-15 -style=file ${CODE}
 
 CLANG_TIDY=clang-tidy-15 -p . ${CODE} -checks=llvm-header-guard
 CLANG_TIDY_EXTRA= \
+	-Iinclude \
 	-Iinclude/morphy \
 	-Igodot-cpp/include \
 	-Igodot-cpp/gen/include \

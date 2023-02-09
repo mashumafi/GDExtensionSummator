@@ -21,3 +21,6 @@ bin
 *.includes
 *.idb
 *.exp
+
+# Misc
+.DS_Store

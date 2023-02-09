@@ -7,6 +7,9 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include <boost/container/flat_map.hpp>
+#include <boost/container/flat_set.hpp>
+
 #include <functional>
 #include <limits>
 #include <map>
@@ -54,7 +57,7 @@ struct GodotAllocator {
 template <class Key, class T>
 using GodotPairAllocator = GodotAllocator<std::pair<Key, T>>;
 
-// std collection types with Godot allocators
+// collection types with Godot allocators
 template <class Key, class T, class Compare = std::less<Key>>
 using GodotMap = std::map<Key, T, Compare, GodotPairAllocator<const Key, T>>;
 
@@ -64,8 +67,14 @@ using GodotSet = std::set<Key, Compare, GodotAllocator<Key>>;
 template <class Key, class T, class Hash = std::hash<Key>, class KeyEqual = std::equal_to<Key>>
 using GodotUMap = std::unordered_map<Key, T, Hash, KeyEqual, GodotPairAllocator<const Key, T>>;
 
+template <class Key, class T, class Compare = std::less<Key>>
+using GodotFMap = boost::container::flat_map<Key, T, Compare, GodotPairAllocator<Key, T>>;
+
 template <class Key, class Hash = std::hash<Key>, class KeyEqual = std::equal_to<Key>>
 using GodotUSet = std::unordered_set<Key, Hash, KeyEqual, GodotAllocator<Key>>;
+
+template <class Key, class Compare = std::less<Key>>
+using GodotFSet = boost::container::flat_set<Key, Compare, GodotAllocator<Key>>;
 
 template <class T>
 using GodotVector = std::vector<T, GodotAllocator<T>>;

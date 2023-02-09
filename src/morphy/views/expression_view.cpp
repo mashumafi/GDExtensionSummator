@@ -116,7 +116,7 @@ godot::Error ExpressionView::compute_cell(ViewAccessor *base_instance, uint64_t 
 	data.set_cell(column, row, header.execute(inputs, base_instance));
 
 	// Store dependencies
-	meta->dependencies = dependency_tracker.get_dependencies();
+	meta->dependencies = std::move(dependency_tracker.get_dependencies());
 	for (const Dependency &dependency : meta->dependencies) {
 		// Inserts into an existing requirement or creates an empty one
 		requirements[dependency].insert({ column, row });

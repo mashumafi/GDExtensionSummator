@@ -13,7 +13,7 @@ env = SConscript("godot-cpp/SConstruct")
 # - LINKFLAGS are for linking flags
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.
-env.Append(CPPPATH=["include/morphy"])
+env.Append(CPPPATH=["include", "include/morphy"])
 sources = [Glob("src/morphy/*.cpp"), Glob("src/morphy/views/*.cpp")]
 
 if env["platform"] == "macos":

@@ -56,6 +56,12 @@
         "stop_token": "cpp",
         "streambuf": "cpp",
         "thread": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "bitset": "cpp",
+        "complex": "cpp",
+        "source_location": "cpp",
+        "sstream": "cpp",
+        "cfenv": "cpp",
+        "cinttypes": "cpp"
     }
 }
